@@ -12,28 +12,42 @@ app.get("/", (req, res) => {
   res.send("Backend running");
 });
 
-app.post("/issue", (req, res) => {
-  const { credential, signature, signer } = req.body;
+app.post("/issue", async (req, res) => {
+  try {
+    const { holder, skill, signature } = req.body;
 
-  const hash =
-    "0x" +
-    crypto
-      .createHash("sha256")
-      .update(JSON.stringify(credential))
-      .digest("hex");
+    if (!holder || !skill || !signature) {
+      return res.status(400).json({ error: "Missing input" });
+    }
 
-  const record = {
-    holder: credential.holder,
-    skill: credential.skill,
-    issuedAt: credential.issuedAt,
-    credentialHash: hash,
-    ipfsHash: "QmDummyHash"
-  };
+    const credential = {
+      holder,
+      skill,
+      issuer: issuerWallet.address,
+      issuedAt: new Date().toISOString()
+    };
 
-  issued.push(record);
+    const credentialString = JSON.stringify(credential);
 
-  res.json(record);
+    const credentialHash = ethers.utils.keccak256(
+      ethers.utils.toUtf8Bytes(credentialString)
+    );
+
+    const ipfsRes = await pinata.pinJSONToIPFS(credential);
+    const ipfsHash = ipfsRes.IpfsHash;
+
+    await contract.storeCredential(credentialHash);
+
+    return res.json({
+      credentialHash,
+      ipfsHash
+    });
+  } catch (err) {
+    console.error("ISSUE ERROR:", err);
+    return res.status(500).json({ error: err.message });
+  }
 });
+
 
 app.post("/verify", (req, res) => {
   const { hash } = req.body;
