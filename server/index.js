@@ -28,6 +28,7 @@ function getIssuerWallet() {
 }
 
 const app = express();
+app.use(express.json());
 app.use(cors());
 app.use(express.json());
 
@@ -62,7 +63,8 @@ app.post("/issue", async (req, res) => {
     const ipfsRes = await pinata.pinJSONToIPFS(credential);
     const ipfsHash = ipfsRes.IpfsHash;
 
-    await contract.storeCredential(credentialHash);
+    const tx = await contract.storeCredential(credentialHash);
+    await tx.wait(1);
 
     return res.json({
       credentialHash,
