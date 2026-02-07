@@ -4,6 +4,11 @@ const { ethers } = require("ethers");
 const PinataSDK = require("@pinata/sdk");
 require("dotenv").config();
 
+const pinata = new PinataSDK(
+  process.env.PINATA_API_KEY,
+  process.env.PINATA_SECRET_API_KEY
+);
+
 function getIssuerWallet() {
   if (!process.env.ISSUER_PRIVATE_KEY) {
     throw new Error("ISSUER_PRIVATE_KEY missing");
