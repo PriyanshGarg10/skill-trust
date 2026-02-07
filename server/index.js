@@ -1,6 +1,15 @@
 const express = require("express");
-const cors = require("cors");
-const crypto = require("crypto");
+const { ethers } = require("ethers");
+const PinataSDK = require("@pinata/sdk");
+require("dotenv").config();
+const provider = new ethers.providers.JsonRpcProvider(
+  process.env.SEPOLIA_RPC_URL
+);
+
+const issuerWallet = new ethers.Wallet(
+  process.env.ISSUER_PRIVATE_KEY,
+  provider
+);
 
 const app = express();
 app.use(cors());
