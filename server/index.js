@@ -2,15 +2,24 @@ const express = require("express");
 const { ethers } = require("ethers");
 const PinataSDK = require("@pinata/sdk");
 require("dotenv").config();
-const provider = new ethers.providers.JsonRpcProvider(
-  process.env.SEPOLIA_RPC_URL
-);
 
-const issuerWallet = new ethers.Wallet(
-  process.env.ISSUER_PRIVATE_KEY,
-  provider
-);
+function getIssuerWallet() {
+  if (!process.env.ISSUER_PRIVATE_KEY) {
+    throw new Error("ISSUER_PRIVATE_KEY missing");
+  }
+  if (!process.env.SEPOLIA_RPC_URL) {
+    throw new Error("SEPOLIA_RPC_URL missing");
+  }
 
+  const provider = new ethers.providers.JsonRpcProvider(
+    process.env.SEPOLIA_RPC_URL
+  );
+
+  return new ethers.Wallet(
+    process.env.ISSUER_PRIVATE_KEY,
+    provider
+  );
+}
 
 const app = express();
 app.use(cors());
@@ -24,6 +33,7 @@ app.get("/", (req, res) => {
 
 app.post("/issue", async (req, res) => {
   try {
+    const issuerWallet = getIssuerWallet();
     const { holder, skill, signature } = req.body;
 
     if (!holder || !skill || !signature) {
