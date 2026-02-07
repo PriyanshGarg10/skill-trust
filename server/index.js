@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const { ethers } = require("ethers");
 const PinataSDK = require("@pinata/sdk");
 require("dotenv").config();
